@@ -12,8 +12,8 @@ app.use(express.static("public"));
 
 // --- IN-MEMORY STORAGE (For when DB is not connected) ---
 let sessionProducts = [
-    { _id: "m1", name: "Luxury Chronograph", price: 45000, image: "https://images.unsplash.com/photo-1547996160-81dfa63595dd?w=800&q=80", inStock: true },
-    { _id: "m2", name: "Premium Audio Pro", price: 32000, image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80", inStock: true }
+    { _id: "m1", name: "Luxury Chronograph", price: 45000, image: "https://images.unsplash.com/photo-1547996160-81dfa63595dd?w=800&q=80", qty: 10 },
+    { _id: "m2", name: "Premium Audio Pro", price: 32000, image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80", qty: 5 }
 ];
 let sessionOrders = [];
 
@@ -26,7 +26,8 @@ const connectDB = async () => {
         dbConnected = true;
         console.log("MongoDB Connected Successfully");
     } catch (err) {
-        console.log("MongoDB Connection Failed - Using In-Memory Mode");
+        console.error("MongoDB Connection Error:", err.message); // Log exact error
+        console.log("Falling back to In-Memory Mode (Data will not be saved)");
     }
 };
 connectDB();
@@ -34,12 +35,13 @@ connectDB();
 // --- SCHEMAS ---
 const OrderSchema = new mongoose.Schema({
     customerName: String, address: String, phone: String, city: String,
-    productName: String, totalPrice: Number, date: { type: Date, default: Date.now }
+    items: [{ productId: String, name: String, price: Number, qty: Number }],
+    deliveryFee: Number, totalPrice: Number, date: { type: Date, default: Date.now }
 });
 const Order = mongoose.models.Order || mongoose.model("Order", OrderSchema);
 
 const ProductSchema = new mongoose.Schema({
-    name: String, price: Number, image: String, inStock: { type: Boolean, default: true }
+    name: String, price: Number, image: String, qty: { type: Number, default: 0 }
 });
 const Product = mongoose.models.Product || mongoose.model("Product", ProductSchema);
 
@@ -84,34 +86,41 @@ app.get("/api/products", async (req, res) => {
 });
 
 app.post("/api/products", auth, async (req, res) => {
-    const { name, price, image } = req.body;
+    const { name, price, image, qty } = req.body;
     if (dbConnected) {
         try {
-            const p = new Product({ name, price: Number(price), image, inStock: true });
+            const p = new Product({ name, price: Number(price), image, qty: Number(qty) || 0 });
             await p.save();
             return res.json(p);
         } catch (e) { /* fall back to session */ }
     }
-    const newP = { _id: "s" + Date.now(), name, price: Number(price), image, inStock: true };
+    const newP = { _id: "s" + Date.now(), name, price: Number(price), image, qty: Number(qty) || 0 };
     sessionProducts.unshift(newP);
     res.json(newP);
 });
 
 app.patch("/api/products/:id/stock", auth, async (req, res) => {
     const { id } = req.params;
+    const { qty } = req.body; // Expecting { qty: 5 } to set absolute quantity
+
+    // Helper to update specific object
+    const updateQty = (p) => { p.qty = Number(qty); return p; };
+
     if (dbConnected && !id.startsWith("s") && !id.startsWith("m")) {
         try {
             const product = await Product.findById(id);
             if (product) {
-                product.inStock = !product.inStock;
+                product.qty = Number(qty);
                 await product.save();
                 return res.json(product);
             }
         } catch (err) { }
     }
+
+    // Fallback or In-Memory
     const product = sessionProducts.find(p => p._id === id);
     if (product) {
-        product.inStock = !product.inStock;
+        updateQty(product);
         return res.json(product);
     }
     res.status(404).json({ message: "Product not found" });
@@ -130,17 +139,62 @@ app.delete("/api/products/:id", auth, async (req, res) => {
 });
 
 // --- ORDERS API ---
+// --- ORDERS API ---
 app.post("/api/orders", async (req, res) => {
-    const { customerName, address, phone, city, productName, productPrice } = req.body;
-    const totalPrice = Number(productPrice) + 300;
+    const { customerName, address, phone, city, cart } = req.body;
+    // cart: [{ productId, name, price, qty }]
+
+    if (!cart || cart.length === 0) return res.status(400).json({ msg: "Cart is empty" });
+
+    // 1. Calculate Totals
+    let subTotal = 0;
+    cart.forEach(item => subTotal += (item.price * item.qty));
+
+    // Delivery Logic: 300 base. If > 3 unique items, double to 600.
+    const deliveryFee = cart.length > 3 ? 600 : 300;
+    const totalPrice = subTotal + deliveryFee;
+
+    // 2. Validate Stock & Update
     if (dbConnected) {
         try {
-            const o = new Order({ customerName, address, phone, city, productName, totalPrice });
+            // Check stock first
+            for (const item of cart) {
+                // Optimization: Could use findById here in parallel, but sequential is safer for stock check
+                if (!item.productId.startsWith('s') && !item.productId.startsWith('m')) {
+                    const p = await Product.findById(item.productId);
+                    if (!p || p.qty < item.qty) return res.status(400).json({ msg: `Insufficient stock for ${item.name}` });
+                }
+            }
+
+            // Deduct stock
+            for (const item of cart) {
+                if (!item.productId.startsWith('s') && !item.productId.startsWith('m')) {
+                    await Product.findByIdAndUpdate(item.productId, { $inc: { qty: -item.qty } });
+                }
+            }
+
+            const o = new Order({ customerName, address, phone, city, items: cart, deliveryFee, totalPrice });
             await o.save();
             return res.json(o);
-        } catch (e) { /* fall back */ }
+        } catch (e) { console.log(e); return res.status(500).json({ msg: "Order Failed" }); }
     }
-    const newO = { _id: "o" + Date.now(), customerName, address, phone, city, productName, totalPrice, date: new Date() };
+
+    // In-memory logic
+    for (const item of cart) {
+        const p = sessionProducts.find(sp => sp._id === item.productId);
+        if (p) {
+            if (p.qty < item.qty) return res.status(400).json({ msg: `Not enough stock: ${item.name}` });
+            p.qty -= item.qty;
+        }
+    }
+
+    const newO = {
+        _id: "o" + Date.now(),
+        customerName, address, phone, city,
+        items: cart,
+        deliveryFee, totalPrice,
+        date: new Date()
+    };
     sessionOrders.unshift(newO);
     res.json(newO);
 });
