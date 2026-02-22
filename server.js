@@ -220,3 +220,4 @@ if (process.env.NODE_ENV !== 'production') {
     app.listen(PORT, () => console.log(`SMI Store running at http://localhost:${PORT}`));
 }
 module.exports = app;
+
