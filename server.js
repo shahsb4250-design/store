@@ -19,14 +19,17 @@ let sessionOrders = [];
 
 // --- DATABASE ---
 let dbConnected = false;
+let dbError = "No connection attempt yet";
 const connectDB = async () => {
     if (dbConnected || !process.env.MONGO_URI) return;
     try {
         await mongoose.connect(process.env.MONGO_URI);
         dbConnected = true;
+        dbError = null;
         console.log("MongoDB Connected Successfully");
     } catch (err) {
-        console.error("MongoDB Connection Error:", err.message); // Log exact error
+        dbError = err.message;
+        console.error("MongoDB Connection Error:", err.message);
         console.log("Falling back to In-Memory Mode (Data will not be saved)");
     }
 };
@@ -209,7 +212,7 @@ app.get("/api/orders", auth, async (req, res) => {
 
 // --- FRONTEND ---
 app.get("/", (req, res) => { res.sendFile(path.join(__dirname, "index.html")); });
-app.get("/api/status", (req, res) => { res.json({ version: "v7.0-Stable", db: dbConnected }); });
+app.get("/api/status", (req, res) => { res.json({ version: "v7.1-Diag", db: dbConnected, error: dbError }); });
 app.use((req, res, next) => {
     if (req.path.startsWith('/api')) return next();
     res.sendFile(path.join(__dirname, "index.html"));
@@ -220,4 +223,3 @@ if (process.env.NODE_ENV !== 'production') {
     app.listen(PORT, () => console.log(`SMI Store running at http://localhost:${PORT}`));
 }
 module.exports = app;
-
