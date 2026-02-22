@@ -1,1 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMI Store | Premium Cyber Retail</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.5);
+            --accent: #a855f7;
+            --bg: #030712;
+            --card-bg: #111827;
+            --text: #f3f4f6;
+            --text-muted: #9ca3af;
+            --safe: #10b981;
+            --danger: #ef4444;
+            --glass: rgba(17, 24, 39, 0.7);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Animated Background */
+        .aura {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, #1e1b4b 0%, transparent 70%);
+            z-index: -1;
+            opacity: 0.5;
+        }
+
+        .blob {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: var(--primary);
+            filter: blur(120px);
+            border-radius: 50%;
+            z-index: -1;
+            opacity: 0.15;
+            animation: move 20s infinite alternate;
+        }
+
+        @keyframes move {
+            from {
+                transform: translate(-20%, -20%);
+            }
+
+            to {
+                transform: translate(50%, 50%);
+            }
+        }
+
+        /* Navigation */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: var(--glass);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 0.75rem 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        .nav-btns {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-nav {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-nav:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        /* Hero */
+        .hero {
+            padding: 4rem 0 2rem;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+            padding: 3rem 0;
+        }
+
+        .product-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .img-box {
+            height: 300px;
+            background: #1f2937;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: 0.5s;
+        }
+
+        .product-card:hover .img-box img {
+            transform: scale(1.1);
+        }
+
+        .card-info {
+            padding: 1.5rem;
+        }
+
+        .card-info h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .price-tag {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-buy {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-buy:hover {
+            opacity: 0.9;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 500px;
+            border-radius: 24px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.8rem 1rem;
+            border-radius: 10px;
+            color: white;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* Admin Dashboard Styles */
+        .admin-view {
+            display: none;
+            padding-top: 2rem;
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.4rem;
+            border-radius: 12px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 0.75rem;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .order-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .order-info h4 {
+            margin-bottom: 0.25rem;
+        }
+
+        .order-info p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Stock Badge */
+        .stock-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            z-index: 10;
+        }
+
+        .stock-in {
+            background: var(--safe);
+            color: white;
+        }
+
+        .stock-out {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Print Area Hiders */
+        #print-area {
+            display: none;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            #print-area,
+            #print-area * {
+                visibility: visible;
+            }
+
+            #print-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                display: block !important;
+                color: black !important;
+                background: white !important;
+                padding: 40px;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .hero {
+                padding: 2rem 0;
+            }
+
+            .products-grid {
+                gap: 1rem;
+                padding: 1.5rem 0;
+            }
+
+            .modal-content {
+                border-radius: 0;
+                height: 100%;
+                max-height: 100%;
+                border: none;
+            }
+
+            .order-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .order-actions {
+                width: 100%;
+            }
+
+            .order-actions button {
+                flex: 1;
+            }
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.5s;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .feedback-toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            background: var(--card-bg);
+            border: 1px solid var(--primary);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            z-index: 3000;
+            display: none;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                bottom: -50px;
+                opacity: 0;
+            }
+
+            to {
+                bottom: 2rem;
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="loading-overlay" id="loader">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="aura"></div>
+    <div class="blob"></div>
+
+    <nav>
+        <div class="container nav-content">
+            <div class="logo">SMI STORE</div>
+            <div class="nav-btns">
+                <button class="btn-nav" onclick="openCart()">
+                    Cart (<span id="cart-count">0</span>)
+                </button>
+                <button class="btn-nav" id="admin-btn" onclick="openAdminModal()">
+                    <span id="admin-btn-text">Partner Access</span>
+                </button>
+                <button class="btn-nav" id="logout-btn" style="display: none;" onclick="logout()">
+                    Sign Out
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Database Status Indicator -->
+    <div id="db-status-bar"
+        style="background: rgba(0,0,0,0.5); text-align: center; padding: 5px; font-size: 10px; color: var(--text-muted); border-bottom: 1px solid rgba(255,255,255,0.05);">
+        System Status: <span id="db-status-text">Checking Link...</span>
+    </div>
+
+    <div class="container">
+        <!-- Main Shop View -->
+        <div id="shop-view">
+            <section class="hero">
+                <h1>Future of <span style="color: var(--primary)">Retail</span></h1>
+                <p>Curated premium tech artifacts for the modern pioneer. Reliable Cash-on-Delivery across all
+                    territories.</p>
+            </section>
+
+            <div class="products-grid" id="products-grid">
+                <!-- Products will load here -->
+            </div>
+        </div>
+
+        <!-- Admin View -->
+        <div id="admin-view" class="admin-view">
+            <div class="admin-tabs">
+                <div class="tab active" id="tab-inventory" onclick="switchTab('inventory')">Collection</div>
+                <div class="tab" id="tab-orders" onclick="switchTab('orders')">Logistics</div>
+            </div>
+
+            <div id="inventory-content">
+                <div class="modal-content"
+                    style="max-width: 100%; margin-bottom: 2rem; background: rgba(255,255,255,0.02);">
+                    <h3 style="margin-bottom: 1.5rem;">Add New Artifact</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <input type="text" id="p-name" placeholder="Artifact Name"
+                            style="background: rgba(0,0,0,0.3); border: 1px solid #333; padding: 10px; color: white; border-radius: 8px;">
+                        <input type="number" id="p-price" placeholder="Price (PKR)"
+                            style="background: rgba(0,0,0,0.3); border: 1px solid #333; padding: 10px; color: white; border-radius: 8px;">
+                        <input type="text" id="p-image" placeholder="Image URL"
+                            style="background: rgba(0,0,0,0.3); border: 1px solid #333; padding: 10px; color: white; border-radius: 8px;">
+                        <input type="number" id="p-qty" placeholder="Quantity"
+                            style="background: rgba(0,0,0,0.3); border: 1px solid #333; padding: 10px; color: white; border-radius: 8px;">
+                        <button class="btn-buy" onclick="addProduct()" style="padding: 10px;">Enlist Artifact</button>
+                    </div>
+                </div>
+                <div class="products-grid" id="admin-products-grid"></div>
+            </div>
+
+            <div id="orders-content" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3>Order Dispatch Log</h3>
+                    <button class="btn-nav" onclick="printAll()">Download Full Manifest</button>
+                </div>
+                <div id="orders-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal" id="login-modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('login-modal')">&times;</button>
+            <h2 style="margin-bottom: 1.5rem;">Admin Authentication</h2>
+            <div class="form-group">
+                <label>Admin ID (Email)</label>
+                <input type="email" id="adm-email" placeholder="email@ismail.com">
+            </div>
+            <div class="form-group">
+                <label>Security Key</label>
+                <input type="password" id="adm-pass" placeholder="••••••••">
+            </div>
+            <button class="btn-buy" onclick="login()">Access Dashboard</button>
+        </div>
+    </div>
+
+    <div class="modal" id="cart-modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('cart-modal')">&times;</button>
+            <h2 style="margin-bottom: 1.5rem;">Secure Logistics</h2>
+
+            <div id="cart-items" style="max-height: 200px; overflow-y: auto; margin-bottom: 1rem;">
+                <!-- Cart Items Render Here -->
+            </div>
+
+            <div class="form-group">
+                <label>Customer Name</label>
+                <input type="text" id="cust-name" placeholder="Full legal name">
+            </div>
+            <div class="form-group">
+                <label>Mobile Number</label>
+                <input type="tel" id="cust-phone" placeholder="03XXXXXXXXX">
+            </div>
+            <div class="form-group">
+                <label>City</label>
+                <input type="text" id="cust-city" placeholder="Shipping city">
+            </div>
+            <div class="form-group">
+                <label>Delivery Address</label>
+                <textarea id="cust-address" rows="2" placeholder="Full residential or workspace address"></textarea>
+            </div>
+
+            <div
+                style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; font-size: 0.85rem;">
+                <div style="display:flex; justify-content:space-between; margin-bottom: 5px;"><span>Subtotal</span><span
+                        id="cart-sub">Rs 0</span></div>
+                <div style="display:flex; justify-content:space-between; color: var(--safe);">
+                    <span>Delivery Fee <span id="delivery-note"
+                            style="font-size:10px; opacity:0.7">(Standard)</span></span>
+                    <span id="cart-delivery">Rs 300</span>
+                </div>
+                <hr style="border: 0; border-top: 1px solid #333; margin: 10px 0;">
+                <div style="display:flex; justify-content:space-between; font-weight: 800; font-size: 1.1rem;">
+                    <span>Total Payable</span><span id="cart-total">Rs 0</span>
+                </div>
+            </div>
+            <button class="btn-buy" onclick="submitOrder()">Confirm Dispatch (COD)</button>
+        </div>
+    </div>
+
+    <div id="print-area">
+        <div id="print-content"></div>
+    </div>
+
+    <div class="feedback-toast" id="toast"></div>
+
+    <script>
+        let token = localStorage.getItem('smi_token') || "";
+        let cart = JSON.parse(localStorage.getItem('smi_cart') || "[]");
+
+        // On Load
+        window.onload = () => {
+            setTimeout(() => document.getElementById('loader').style.opacity = '0', 500);
+            setTimeout(() => document.getElementById('loader').style.display = 'none', 1000);
+
+            if (token) {
+                document.getElementById('admin-btn-text').innerText = "Dashboard Active";
+                document.getElementById('logout-btn').style.display = 'flex';
+                showAdminView();
+            }
+            loadProducts();
+            updateCartUI();
+            checkStatus();
+            setInterval(checkStatus, 15000); // Check every 15s
+        };
+
+        async function checkStatus() {
+            try {
+                const res = await fetch("/api/status");
+                const data = await res.json();
+                const statusText = document.getElementById('db-status-text');
+                if (data.db) {
+                    statusText.innerText = "MongoDB Connected (Permanent Storage)";
+                    statusText.style.color = "var(--safe)";
+                } else {
+                    statusText.innerText = "In-Memory Mode (Reason: " + (data.error || "Checking...") + ")";
+                    statusText.style.color = "var(--danger)";
+                }
+            } catch (e) { }
+        }
+
+        async function loadProducts() {
+            try {
+                const res = await fetch("/api/products");
+                const products = await res.json();
+                const grid = document.getElementById('products-grid');
+                const adminGrid = document.getElementById('admin-products-grid');
+
+                // Customer View
+                let html = products.map(p => `
+                    <div class="product-card">
+                        <div class="stock-badge ${p.qty > 0 ? 'stock-in' : 'stock-out'}">${p.qty > 0 ? `In Stock (${p.qty})` : 'Sold Out'}</div>
+                        <div class="img-box">
+                            <img src="${p.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80'}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/600x400?text=Artifact'">
+                        </div>
+                        <div class="card-info">
+                            <h3>${p.name}</h3>
+                            <div class="price-tag">Rs ${Number(p.price).toLocaleString()}</div>
+                            <button class="btn-buy" onclick="addToCart('${p._id}', '${p.name}', ${p.price}, ${p.qty})" ${p.qty <= 0 ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>
+                                ${p.qty > 0 ? 'Add to Cart' : 'Restocking'}
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+                if (products.length === 0) html = `<div style="grid-column:1/-1; text-align:center; padding:5rem; opacity:0.5;">No artifacts currently enstated.</div>`;
+                grid.innerHTML = html;
+
+                // Admin View
+                if (token) {
+                    adminGrid.innerHTML = products.map(p => `
+                        <div class="product-card" style="height: auto; opacity: ${p.qty > 0 ? '1' : '0.6'}">
+                            <div class="card-info">
+                                <h3 style="font-size: 1rem;">${p.name} (${p.qty})</h3>
+                                <div class="price-tag" style="font-size: 0.9rem; margin-bottom: 0.5rem;">Rs ${Number(p.price).toLocaleString()}</div>
+                                <div style="display:flex; flex-direction: column; gap: 0.5rem;">
+                                    <input type="number" value="${p.qty}" onchange="updateStock('${p._id}', this.value)" style="width:100%; padding:5px; background:rgba(0,0,0,0.5); color:white; border:1px solid #333; border-radius:4px;">
+                                    <button class="btn-nav" style="width:100%;" onclick="deleteProduct('${p._id}')">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        // Cart Logic
+        function addToCart(id, name, price, maxQty) {
+            const existing = cart.find(i => i.productId === id);
+            if (existing) {
+                if (existing.qty < maxQty) existing.qty++;
+                else notify("Max stock reached");
+            } else {
+                cart.push({ productId: id, name, price, qty: 1, maxQty });
+            }
+            updateCartUI();
+            notify("Added to Cart", "success");
+        }
+
+        function updateCartQty(id, change) {
+            const item = cart.find(i => i.productId === id);
+            if (!item) return;
+            const newQty = item.qty + change;
+            if (newQty > item.maxQty) return notify("Stock Limit Reached");
+            if (newQty < 1) cart = cart.filter(i => i.productId !== id);
+            else item.qty = newQty;
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            localStorage.setItem('smi_cart', JSON.stringify(cart));
+            document.getElementById('cart-count').innerText = cart.reduce((a, b) => a + b.qty, 0);
+
+            // Render Modal Items
+            const html = cart.map(i => `
+                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:10px; margin-bottom:5px; border-radius:8px;">
+                    <div>
+                        <div style="font-weight:bold; font-size:0.9rem;">${i.name}</div>
+                        <div style="font-size:0.8rem; color:var(--text-muted);">Rs ${i.price} x ${i.qty}</div>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <button class="btn-nav" style="padding:2px 8px;" onclick="updateCartQty('${i.productId}', -1)">-</button>
+                        <span>${i.qty}</span>
+                        <button class="btn-nav" style="padding:2px 8px;" onclick="updateCartQty('${i.productId}', 1)">+</button>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('cart-items').innerHTML = html || '<div style="text-align:center; padding:1rem; opacity:0.5;">Cart is empty</div>';
+
+            // Calculations
+            const subTotal = cart.reduce((a, b) => a + (b.price * b.qty), 0);
+            const deliveryFee = cart.length > 3 ? 600 : 300; // >3 unique items = double fee
+
+            document.getElementById('cart-sub').innerText = "Rs " + subTotal.toLocaleString();
+            document.getElementById('cart-delivery').innerText = "Rs " + deliveryFee;
+            document.getElementById('delivery-note').innerText = cart.length > 3 ? "(Heavy Load)" : "(Standard)";
+            document.getElementById('cart-total').innerText = "Rs " + (subTotal + deliveryFee).toLocaleString();
+        }
+
+        function openCart() { openModal('cart-modal'); }
+
+        async function submitOrder() {
+            if (cart.length === 0) return notify("Cart is empty");
+            const btn = event.target;
+            const data = {
+                customerName: document.getElementById('cust-name').value.trim(),
+                phone: document.getElementById('cust-phone').value.trim(),
+                city: document.getElementById('cust-city').value.trim(),
+                address: document.getElementById('cust-address').value.trim(),
+                cart: cart
+            };
+
+            if (!data.customerName || !data.phone || !data.city || !data.address) return notify("Please define dispatch coordinates.");
+
+            btn.disabled = true;
+            btn.innerText = "Encrypting Order...";
+
+            try {
+                const res = await fetch("/api/orders", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                });
+                if (res.ok) {
+                    notify("Acquisition Logged Successfully. Stock Updated.", "success");
+                    cart = [];
+                    updateCartUI();
+                    closeModal('cart-modal');
+                    loadProducts(); // Refresh stock
+                } else {
+                    const e = await res.json();
+                    notify(e.msg || "Order Failed");
+                }
+            } catch (err) { notify("Communication Error"); }
+            finally { btn.disabled = false; btn.innerText = "Confirm Dispatch (COD)"; }
+        }
+
+        // Admin Functions
+        async function addProduct() {
+            const name = document.getElementById('p-name').value;
+            const price = document.getElementById('p-price').value;
+            const image = document.getElementById('p-image').value;
+            const qty = document.getElementById('p-qty').value;
+
+            try {
+                const res = await fetch("/api/products", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Authorization": token },
+                    body: JSON.stringify({ name, price, image, qty })
+                });
+                if (res.ok) { notify("Artifact Enlisted"); loadProducts(); }
+            } catch (err) { notify("System Error"); }
+        }
+
+        async function updateStock(id, newQty) {
+            try {
+                const res = await fetch(`/api/products/${id}/stock`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json", "Authorization": token },
+                    body: JSON.stringify({ qty: newQty })
+                });
+                if (res.ok) notify("Stock Calibrated");
+            } catch (e) { notify("Sync Failed"); }
+        }
+
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        function openAdminModal() {
+            if (token) showAdminView();
+            else openModal('login-modal');
+        }
+
+        function showAdminView() {
+            document.getElementById('shop-view').style.display = 'none';
+            document.getElementById('admin-view').style.display = 'block';
+        }
+
+        async function login() {
+            const email = document.getElementById('adm-email').value;
+            const password = document.getElementById('adm-pass').value;
+
+            try {
+                const res = await fetch("/api/admin/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    token = data.token;
+                    localStorage.setItem('smi_token', token);
+                    location.reload();
+                } else {
+                    const error = await res.json();
+                    notify(error.msg || "Authentication Denied", "error");
+                }
+            } catch (err) { notify("Link Error", "error"); }
+        }
+
+        function logout() {
+            localStorage.removeItem('smi_token');
+            location.reload();
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm("De-enlist this artifact permanentely?")) return;
+            try {
+                const res = await fetch(`/api/products/${id}`, {
+                    method: "DELETE",
+                    headers: { "Authorization": token }
+                });
+                if (res.ok) loadProducts();
+            } catch (err) { notify("System Error"); }
+        }
+
+        function switchTab(t) {
+            document.getElementById('inventory-content').style.display = t === 'inventory' ? 'block' : 'none';
+            document.getElementById('orders-content').style.display = t === 'orders' ? 'block' : 'none';
+            document.getElementById('tab-inventory').className = `tab ${t === 'inventory' ? 'active' : ''}`;
+            document.getElementById('tab-orders').className = `tab ${t === 'orders' ? 'active' : ''}`;
+            if (t === 'orders') loadOrders();
+        }
+
+        async function loadOrders() {
+            const list = document.getElementById('orders-list');
+            try {
+                const res = await fetch("/api/orders", { headers: { "Authorization": token } });
+                const orders = await res.json();
+
+                if (orders.length === 0) { list.innerHTML = `<p style="opacity:0.5; text-align:center; padding:2rem;">No pending dispatches.</p>`; return; }
+
+                list.innerHTML = orders.map(o => {
+                    const itemsHtml = o.items ? o.items.map(i =>
+                        `<div style="font-size:0.9rem; margin-left:10px;">• ${i.qty}x ${i.name}</div>`
+                    ).join('') : `<div style="font-size:0.9rem;">• ${o.productName} (Legacy)</div>`;
+
+                    return `
+                    <div class="order-card" id="ord-${o._id}">
+                        <div class="order-info" style="width:100%">
+                            <div style="display:flex; justify-content:space-between;">
+                                <h4>Order #${o._id.slice(-6)}</h4>
+                                <span style="font-size:0.8rem; opacity:0.6">${new Date(o.date).toLocaleString()}</span>
+                            </div>
+                            <div style="margin: 0.5rem 0;">${itemsHtml}</div>
+                            <hr style="border:0; border-top:1px dashed #333; margin:0.5rem 0;">
+                            <p><strong>Customer:</strong> ${o.customerName} | ${o.phone}</p>
+                            <p><strong>Address:</strong> ${o.address}, ${o.city}</p>
+                            <div style="display:flex; justify-content:space-between; margin-top:0.5rem; color:var(--primary); font-weight:800;">
+                                <span>Total (inc. ${o.deliveryFee || 300} shipping):</span>
+                                <span>Rs ${o.totalPrice.toLocaleString()}</span>
+                            </div>
+                        </div>
+                        <div class="order-actions" style="min-width: 100px; justify-content: flex-end;">
+                            <button class="btn-nav" onclick="printOne('${o._id}')">Print Bill</button>
+                        </div>
+                    </div>
+                `}).join('');
+            } catch (e) { notify("Logistics Load Error"); }
+        }
+
+        function printOne(id) {
+            const content = document.getElementById(`ord-${id}`).cloneNode(true);
+            content.querySelector('.order-actions').remove();
+            document.getElementById('print-content').innerHTML = `
+                <div style="text-align:center; margin-bottom: 2rem;">
+                    <h1 style="margin:0">SMI STORE</h1>
+                    <p>Official Dispatch Manifest</p>
+                </div>
+                <hr style="border:1px solid #000; margin-bottom: 2rem;">
+                ${content.innerHTML}
+                <div style="margin-top: 4rem; border-top: 1px dotted #ccc; padding-top: 1rem; font-size: 12px; text-align: center;">
+                    Thank you for acquisitioning from SMI Store. Artifact dispatch authorized.
+                </div>
+            `;
+            window.print();
+        }
+
+        function printAll() {
+            const list = document.getElementById('orders-list').cloneNode(true);
+            list.querySelectorAll('.order-actions').forEach(el => el.remove());
+            document.getElementById('print-content').innerHTML = `
+                <h1 style="text-align:center">FULL LOGISTICS MANIFEST</h1>
+                <p style="text-align:center">Generated: ${new Date().toLocaleString()}</p>
+                <hr style="border:1px solid #000; margin: 2rem 0;">
+                ${list.innerHTML}
+            `;
+            window.print();
+        }
+
+        function notify(msg, type) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.style.display = 'block';
+            t.style.borderColor = type === 'error' ? 'var(--danger)' : 'var(--primary)';
+            setTimeout(() => t.style.display = 'none', 3000);
+        }
+    </script>
+</body>
+
+</html>
