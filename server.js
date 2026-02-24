@@ -23,12 +23,18 @@ let dbError = "No connection attempt yet";
 const connectDB = async () => {
     if (dbConnected || !process.env.MONGO_URI) return;
     try {
-        await mongoose.connect(process.env.MONGO_URI);
+        console.log("Attempting to reach MongoDB...");
+        await mongoose.connect(process.env.MONGO_URI, {
+            serverSelectionTimeoutMS: 5000, // Fail after 5s
+            socketTimeoutMS: 45000,         // Keep alive
+            maxPoolSize: 10                // Reuse connections
+        });
         dbConnected = true;
         dbError = null;
         console.log("MongoDB Connected Successfully");
     } catch (err) {
         dbError = err.message;
+        dbConnected = false;
         console.error("MongoDB Connection Error:", err.message);
         console.log("Falling back to In-Memory Mode (Data will not be saved)");
     }
