@@ -18,27 +18,29 @@ let sessionProducts = [
 let sessionOrders = [];
 
 // --- DATABASE ---
-let dbConnected = false;
 let dbError = "No connection attempt yet";
 const connectDB = async () => {
-    if (dbConnected || !process.env.MONGO_URI) return;
+    if (mongoose.connection.readyState === 1 || !process.env.MONGO_URI) return;
     try {
         console.log("Attempting to reach MongoDB...");
         await mongoose.connect(process.env.MONGO_URI, {
-            serverSelectionTimeoutMS: 5000, // Fail after 5s
-            socketTimeoutMS: 45000,         // Keep alive
-            maxPoolSize: 10                // Reuse connections
+            serverSelectionTimeoutMS: 5000,
+            socketTimeoutMS: 45000,
+            maxPoolSize: 10
         });
-        dbConnected = true;
         dbError = null;
         console.log("MongoDB Connected Successfully");
     } catch (err) {
         dbError = err.message;
-        dbConnected = false;
         console.error("MongoDB Connection Error:", err.message);
-        console.log("Falling back to In-Memory Mode (Data will not be saved)");
     }
 };
+
+mongoose.connection.on('disconnected', () => {
+    console.log('MongoDB Disconnected. Attempting reconnect...');
+    connectDB();
+});
+
 connectDB();
 
 // --- SCHEMAS ---
@@ -89,14 +91,14 @@ app.post(["/api/admin/login", "/admin/login"], (req, res) => {
 app.get("/api/products", async (req, res) => {
     try {
         let dbProducts = [];
-        if (dbConnected) dbProducts = await Product.find();
+        if (mongoose.connection.readyState === 1) dbProducts = await Product.find();
         res.json([...dbProducts, ...sessionProducts]);
     } catch (e) { res.json(sessionProducts); }
 });
 
 app.post("/api/products", auth, async (req, res) => {
     const { name, price, image, qty } = req.body;
-    if (dbConnected) {
+    if (mongoose.connection.readyState === 1) {
         try {
             const p = new Product({ name, price: Number(price), image, qty: Number(qty) || 0 });
             await p.save();
@@ -115,7 +117,7 @@ app.patch("/api/products/:id/stock", auth, async (req, res) => {
     // Helper to update specific object
     const updateQty = (p) => { p.qty = Number(qty); return p; };
 
-    if (dbConnected && !id.startsWith("s") && !id.startsWith("m")) {
+    if (mongoose.connection.readyState === 1 && !id.startsWith("s") && !id.startsWith("m")) {
         try {
             const product = await Product.findById(id);
             if (product) {
@@ -137,7 +139,7 @@ app.patch("/api/products/:id/stock", auth, async (req, res) => {
 
 app.delete("/api/products/:id", auth, async (req, res) => {
     const { id } = req.params;
-    if (dbConnected && !id.startsWith("s") && !id.startsWith("m")) {
+    if (mongoose.connection.readyState === 1 && !id.startsWith("s") && !id.startsWith("m")) {
         try {
             await Product.findByIdAndDelete(id);
             return res.json({ msg: "deleted from db" });
@@ -164,11 +166,10 @@ app.post("/api/orders", async (req, res) => {
     const totalPrice = subTotal + deliveryFee;
 
     // 2. Validate Stock & Update
-    if (dbConnected) {
+    if (mongoose.connection.readyState === 1) {
         try {
             // Check stock first
             for (const item of cart) {
-                // Optimization: Could use findById here in parallel, but sequential is safer for stock check
                 if (!item.productId.startsWith('s') && !item.productId.startsWith('m')) {
                     const p = await Product.findById(item.productId);
                     if (!p || p.qty < item.qty) return res.status(400).json({ msg: `Insufficient stock for ${item.name}` });
@@ -211,14 +212,20 @@ app.post("/api/orders", async (req, res) => {
 app.get("/api/orders", auth, async (req, res) => {
     try {
         let dbOrders = [];
-        if (dbConnected) dbOrders = await Order.find().sort({ date: -1 });
+        if (mongoose.connection.readyState === 1) dbOrders = await Order.find().sort({ date: -1 });
         res.json([...dbOrders, ...sessionOrders]);
     } catch (e) { res.json(sessionOrders); }
 });
 
 // --- FRONTEND ---
 app.get("/", (req, res) => { res.sendFile(path.join(__dirname, "index.html")); });
-app.get("/api/status", (req, res) => { res.json({ version: "v7.1-Diag", db: dbConnected, error: dbError }); });
+app.get("/api/status", (req, res) => {
+    res.json({
+        version: "v7.2-Final",
+        db: mongoose.connection.readyState === 1,
+        error: dbError
+    });
+});
 app.use((req, res, next) => {
     if (req.path.startsWith('/api')) return next();
     res.sendFile(path.join(__dirname, "index.html"));
